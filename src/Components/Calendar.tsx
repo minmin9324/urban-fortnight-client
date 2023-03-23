@@ -7,7 +7,7 @@ const onPanelChange = (value: Dayjs, mode: CalendarMode) => {
   console.log(value.format("YYYY-MM-DD"), mode);
 };
 
-const Calendar: React.FC = () => {
+const Calendar: React.FC = (props: any) => {
   const { token } = theme.useToken();
 
   const wrapperStyle: React.CSSProperties = {
@@ -18,7 +18,12 @@ const Calendar: React.FC = () => {
 
   return (
     <div style={wrapperStyle}>
-      <AntdCalendar fullscreen={false} onPanelChange={onPanelChange} />
+      <AntdCalendar
+        {...props}
+        // value={value}
+        fullscreen={false}
+        onPanelChange={onPanelChange}
+      />
     </div>
   );
 };

@@ -1,6 +1,16 @@
 import { Button, Form, Input, Radio, RadioChangeEvent, Space } from "antd";
-import React, { useState } from "react";
+import { useState } from "react";
+import type { Dayjs } from "dayjs";
 import Calendar from "./Components/Calendar";
+import { BOOKING_TIMES } from "./query";
+import { useQuery } from "@apollo/client";
+
+interface FormValueType {
+  username: string;
+  phoneNo: string;
+  model: string;
+  date: Dayjs;
+}
 
 function App() {
   const [value3, setValue3] = useState("Apple");
@@ -15,43 +25,82 @@ function App() {
     setValue3(value);
   };
 
-  const onFinish = (values: any) => {
-    console.log("Success:", values);
+  const [selectTime, setSelectTime] = useState<number | null>(null);
+
+  const onFinish = (value: FormValueType) => {
+    console.log("suc:", value, selectTime, value.date.format("YYYY-MM-DD"));
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
+  const times = [
+    { time: 2, available: true },
+    { time: 3, available: false },
+    { time: 4, available: true },
+    { time: 5, available: false },
+  ];
+
+  const handleTime = (time: number) => {
+    setSelectTime(time);
   };
+
+  const { loading, error, data } = useQuery(BOOKING_TIMES, {
+    variables: { bikeId: 2, date: "2023-03-17" },
+  });
+
+  console.log(data);
 
   return (
     <Form
       name="basic"
       labelCol={{ span: 8 }}
       wrapperCol={{ span: 16 }}
-      style={{ maxWidth: 600 }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
-      <Space.Compact block>
-        <Input style={{ width: "20%" }} />
-        <Input style={{ width: "20%" }} addonBefore="010" />
+      <Space
+        style={{
+          minWidth: "1000px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        size="middle"
+        direction="vertical"
+      >
+        <Form.Item style={{ width: "400px" }} label="이름" name="username">
+          <Input />
+        </Form.Item>
+        <Form.Item style={{ width: "400px" }} label="전화번호" name="phoneNo">
+          <Input addonBefore="010" />
+        </Form.Item>
 
-        <Radio.Group
-          options={options}
-          onChange={onChange3}
-          value={value3}
-          optionType="button"
-          buttonStyle="solid"
-        />
-      </Space.Compact>
-      <Calendar />
-      <Space wrap>
-        <Button type="primary">2:00</Button>
-        <Button>3:00</Button>
+        <Form.Item style={{ width: "400px" }} label="바이크 모델" name="model">
+          <Radio.Group
+            options={options}
+            onChange={onChange3}
+            value={value3}
+            optionType="button"
+            buttonStyle="solid"
+          />
+        </Form.Item>
 
-        <Button disabled>4:00</Button>
+        <Form.Item name="date">
+          <Calendar />
+        </Form.Item>
+
+        <Space wrap>
+          {times.map(({ time, available }) => (
+            <Button
+              key={time}
+              disabled={!available}
+              onClick={() => handleTime(time)}
+              type={time === selectTime ? "primary" : "default"}
+            >{`${time}:00`}</Button>
+          ))}
+        </Space>
+        <Button style={{ width: "300px", marginTop: "30px" }} htmlType="submit">
+          예약하기
+        </Button>
       </Space>
     </Form>
   );
